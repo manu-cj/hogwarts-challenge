@@ -18,6 +18,12 @@ mongoose.connect(mongo_url)
 
 const app = express();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+import userRoutes from './routes/users/userRoutes.js'; 
+userRoutes(app);
+
+
 const PORT = 5000;
 
 app.listen(PORT, () => {
