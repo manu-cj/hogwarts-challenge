@@ -10,9 +10,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    password: {
+    hashedPassword: {
         type: String,
-        required: true  // Assure que le mot de passe est requis
+        required: true 
     },
     role: {
         type: Number,
@@ -20,10 +20,6 @@ const userSchema = new mongoose.Schema({
     },
     lobbyId: {
         type: Number,
-        required: true
-    },
-    token: {
-        type: String,
         required: true
     },
 });

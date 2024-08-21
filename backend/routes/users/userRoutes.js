@@ -1,11 +1,12 @@
-import getUsers from './getUsers.js';
-import addUser from './addUser.js';
-import deleteUser from './deleteUser.js';
-import updateUser from './updateUser.js';
+import express from "express";
+import { addUser } from "../../controllers/users/addUserController.js";
+import { login } from "../../controllers/users/loginController.js";
+const router = express.Router();
+
+// Route POST pour ajouter un utilisateur
+router.post("/registre", addUser);
+router.get("/login", login);
 
 export default function (app) {
-    getUsers(app);
-    addUser(app);
-    deleteUser(app);
-    updateUser(app);
+  app.use("/api", router);
 }
