@@ -57,7 +57,6 @@ export async function addUser(req, res) {
     console.log(`Added ${email} to DB`);
     res.status(201).json({
       message: "Utilisateur ajouté avec succès.",
-      token,
     });
   } catch (err) {
     console.error("Erreur lors de la création de l'utilisateur:", err);

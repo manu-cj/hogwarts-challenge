@@ -20,8 +20,8 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-import userRoutes from './routes/users/userRoutes.js'; 
-userRoutes(app);
+import Routes from './routes/Routes.js'; 
+Routes(app);
 
 
 const PORT = 5000;
