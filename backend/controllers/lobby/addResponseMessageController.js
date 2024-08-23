@@ -1,7 +1,6 @@
 import Response from "./../../models/Response.js";
 import Notification from "./../../models/Notification.js";
 import { validateResponseMessageData } from "./validation/responseValidationController.js";
-import { validateNotificationData } from "../users/validation/notificationValidationController.js";
 
 export async function addResponse(req, res) {
     if (!req.body) {
@@ -44,10 +43,7 @@ export async function addResponse(req, res) {
         res.status(201).json({
             message: "Reponse ajouté au message avec succès",
         });
-        // Endroit ou je mettrais la fonction pour ajouté une notification
-        // if (res.status(201)) {
-        //     console.log("la réponse est 201"); 
-        // }
+
       } catch (err) {
         console.error("Erreur lors de l'ajout de la reponse:", err);
         res
