@@ -1,5 +1,7 @@
 import Response from "./../../models/Response.js";
+import Notification from "./../../models/Notification.js";
 import { validateResponseMessageData } from "./validation/responseValidationController.js";
+import { validateNotificationData } from "../users/validation/notificationValidationController.js";
 
 export async function addResponse(req, res) {
     if (!req.body) {
@@ -8,13 +10,14 @@ export async function addResponse(req, res) {
           .json({ message: "Le corps de la requête est vide." });
       }
 
-      const {message_id, user_id, username, message} = req.body;
+      const {message_id, user_id, username, message,post_reacted_id ,message_notif} = req.body;
 
       const { error } = validateResponseMessageData({
         message_id,
         user_id,
         username,
-        message
+        message,
+        message_notif
       })
 
       if (error) {
@@ -30,6 +33,14 @@ export async function addResponse(req, res) {
         })
         await newResponseMessage.save();
 
+        const checked = false;
+        const newNotification = new Notification({
+            user_id,
+            post_reacted_id,
+            message_notif,
+            checked
+        })
+        await newNotification.save();
         res.status(201).json({
             message: "Reponse ajouté au message avec succès",
         });

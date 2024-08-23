@@ -5,6 +5,7 @@ const responseSchema = Joi.object({
     user_id: Joi.string().required(),
     username: Joi.string().min(3).required(),
     message: Joi.string().min(3).max(255).required(),
+    message_notif: Joi.string().min(3).max(255).required(),
 });
 
 export function validateResponseMessageData(data) {

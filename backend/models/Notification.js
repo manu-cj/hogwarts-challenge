@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    message: {
+    message_notif: {
         type: String,
         required: true,
         minlength: 3,

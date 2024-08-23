@@ -10,26 +10,18 @@ export async function addReact(req, res) {
           .json({ message: "Le corps de la requête est vide." });
       }
 
-      const {message_id, user_id, username, post_reacted_id, message} = req.body;
+      const {message_id, user_id, username, post_reacted_id, message_notif} = req.body;
 
       const { error } = validateReactMessageData({
         message_id,
         user_id,
-        username
+        username,
+        message_notif
       })
 
       if (error) {
         return res.status(400).json({message: error.details[0].message})
       }
-
-      const { err } = validateNotificationData({
-        user_id,
-        post_reacted_id,
-        message
-    })
-    if (err) {
-        res.status(400).json({message: err.details[0].message});
-    }
 
       try {
         const newReactMeassage = new React({
@@ -43,7 +35,7 @@ export async function addReact(req, res) {
         const newNotification = new Notification({
             user_id,
             post_reacted_id,
-            message,
+            message_notif,
             checked
         })
         await newNotification.save();
