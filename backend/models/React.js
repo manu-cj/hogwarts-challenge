@@ -16,7 +16,7 @@ const reactSchema = new mongoose.Schema({
 },
 {
      timestamps: true,  // Ajoute automatiquement `createdAt` et `updatedAt`
-    collection: 'response_message'
+    collection: 'react_message'
 })
 
 const React = mongoose.model('React', reactSchema);

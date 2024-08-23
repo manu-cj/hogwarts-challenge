@@ -1,5 +1,7 @@
 import React from './../../models/React.js';
+import Notification from './../../models/Notification.js';
 import { validateReactMessageData } from './validation/reactValidationController.js';
+import { validateNotificationData } from '../users/validation/notificationValidationController.js';
 
 export async function addReact(req, res) {
     if (!req.body) {
@@ -8,7 +10,7 @@ export async function addReact(req, res) {
           .json({ message: "Le corps de la requête est vide." });
       }
 
-      const {message_id, user_id, username} = req.body;
+      const {message_id, user_id, username, post_reacted_id, message} = req.body;
 
       const { error } = validateReactMessageData({
         message_id,
@@ -20,6 +22,15 @@ export async function addReact(req, res) {
         return res.status(400).json({message: error.details[0].message})
       }
 
+      const { err } = validateNotificationData({
+        user_id,
+        post_reacted_id,
+        message
+    })
+    if (err) {
+        res.status(400).json({message: err.details[0].message});
+    }
+
       try {
         const newReactMeassage = new React({
             message_id,
@@ -28,10 +39,26 @@ export async function addReact(req, res) {
         })
         await newReactMeassage.save();
 
+        const checked = false;
+        const newNotification = new Notification({
+            user_id,
+            post_reacted_id,
+            message,
+            checked
+        })
+        await newNotification.save();
+
         res.status(201).json({
             message: "Reaction ajouté avec succès",
         })
 
+        
+
+        
+        // Endroit ou je mettrais la fonction pour ajouté une notification
+        // if (res.status(201)) {
+        //     console.log("la réponse est 201"); 
+        // }
         
       } catch (error) {
         console.log("Erreur lors de l'ajout de la réaction");
