@@ -15,8 +15,12 @@ const responseSchema = new mongoose.Schema({
     },
     message: {
         type: String,
-        required: true
+        required: true,
+        minlength: 3,
+        maxlength: 255,
     },
+},
+{
     timestamps: true,  // Ajoute automatiquement `createdAt` et `updatedAt`
     collection: 'response_message'
 });

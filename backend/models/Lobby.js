@@ -26,7 +26,8 @@ const lobbySchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-}, {
+},
+{
     timestamps: true,  // Ajoute automatiquement `createdAt` et `updatedAt`
     collection: 'lobby'
 });
