@@ -8,6 +8,7 @@ import { addResponse } from "../controllers/lobby/addResponseMessageController.j
 import { addReact } from "../controllers/lobby/addReactController.js";
 import { getMessages } from "../controllers/lobby/getMessageController.js";
 import { getResponses } from "../controllers/lobby/getResponseController.js";
+import { getMessageById } from "../controllers/lobby/getMessageByIdController.js";
 
 
 const router = express.Router();
@@ -18,11 +19,14 @@ router.post("/auth", login);
 router.post('/refresh-token', refreshToken);
 router.post('/add-message', verifyAccessToken, addMessage);
 router.post('/add-response', verifyAccessToken, addResponse);
+router.post('/add-react', verifyAccessToken, addReact);
+
 
 
 //Routes GET 
-router.get('/add-react', verifyAccessToken, addReact);
+router.get("/get-lobby-messages", verifyAccessToken, getMessages);
 router.get('/get-responses-message', verifyAccessToken, getResponses);
+router.get('/get-message', verifyAccessToken, getMessageById)//affiche le message correspondant à l'id
 
 //Routes put
 
@@ -32,7 +36,6 @@ router.get('/get-responses-message', verifyAccessToken, getResponses);
 
 
 
-router.post("/get-lobby-messages", verifyAccessToken, getMessages)
 export default function (app) {
   app.use("/api", router);
 }
