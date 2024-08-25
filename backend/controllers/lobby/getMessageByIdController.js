@@ -14,7 +14,7 @@ export async function getMessageById(req, res) {
     }
 
     try {
-        const message = await Lobby.findOne({ _id: id });
+        const message = await Lobby.findById({ _id: id });
 
         if (!message) {
             return res.status(404).json({
