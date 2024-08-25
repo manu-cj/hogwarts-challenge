@@ -1,42 +1,38 @@
 import Lobby from "../../models/Lobby.js";
 import { validateIdData } from "../validation/getByIdValidationController.js";
 
-
 export async function getMessageById(req, res) {
-    if (!req.body) {
-        return res
-          .status(400)
-          .json({ message: "Le corps de la requête est vide." });
-      }
-    const {id} =req.params;
+    if (!req.query) {
+        return res.status(400).json({ message: "L'ID du message est manquant dans les paramètres de la requête." });
+    }
 
-    const { error } = validateIdData({
-        id
-    })
+    const { id } = req.query;
+
+    const { error } = validateIdData({ id });
     if (error) {
-        res.status(400).json({message: error.details[0].message})
+        return res.status(400).json({ message: error.details[0].message });
     }
 
     try {
-        const message = await Lobby.find(id)
+        const message = await Lobby.findOne({ _id: id });
+
         if (!message) {
             return res.status(404).json({
                 success: false,
                 message: "Message introuvable."
-            }); // Ajout du return ici
+            });
         }
+
         return res.status(200).json({
             success: true,
             message
-        })
-    } catch (error) {
-        console.log("Impossible de trouver ce message.", error);
-        res
-            .status(500)
-            .json({
-                success:false,
-                message: "Impossible de trouvé ce message"
-            })
+        });
 
+    } catch (error) {
+        console.error("Impossible de trouver ce message :", error);
+        return res.status(500).json({
+            success: false,
+            message: "Impossible de récupérer ce message."
+        });
     }
 }

@@ -9,6 +9,7 @@ import { addReact } from "../controllers/lobby/addReactController.js";
 import { getMessages } from "../controllers/lobby/getMessageController.js";
 import { getResponses } from "../controllers/lobby/getResponseController.js";
 import { getMessageById } from "../controllers/lobby/getMessageByIdController.js";
+import { getNotifications } from "../controllers/users/getNotificationsController.js";
 
 
 const router = express.Router();
@@ -27,9 +28,9 @@ router.post('/add-react', verifyAccessToken, addReact);
 router.get("/get-lobby-messages", verifyAccessToken, getMessages);
 router.get('/get-responses-message', verifyAccessToken, getResponses);
 router.get('/get-message', verifyAccessToken, getMessageById)//affiche le message correspondant à l'id
-
+router.get('/get-notifications', verifyAccessToken, getNotifications);
 //Routes put
-
+ 
 
 //Routes delete
 
