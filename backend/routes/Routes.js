@@ -23,12 +23,13 @@ router.post('/add-response', verifyAccessToken, addResponse);
 router.post('/add-react', verifyAccessToken, addReact);
 
 
-
 //Routes GET 
 router.get("/get-lobby-messages", verifyAccessToken, getMessages);
 router.get('/get-responses-message', verifyAccessToken, getResponses);
 router.get('/get-message', verifyAccessToken, getMessageById)//affiche le message correspondant à l'id
 router.get('/get-notifications', verifyAccessToken, getNotifications);
+
+
 //Routes put
  
 

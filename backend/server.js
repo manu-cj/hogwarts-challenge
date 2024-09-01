@@ -2,6 +2,8 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import cors from 'cors';
+
 
 dotenv.config();
 const mongo_user = process.env.MONGO_USER;
@@ -17,6 +19,12 @@ mongoose.connect(mongo_url)
 
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://127.0.0.1:5173', // Allow only this origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
+}));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
