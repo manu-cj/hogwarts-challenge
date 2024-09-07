@@ -45,6 +45,7 @@ export async function addUser(req, res) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
 
+
     const newUser = new User({
       email,
       username,

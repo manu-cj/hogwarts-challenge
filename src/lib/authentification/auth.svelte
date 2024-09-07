@@ -2,26 +2,50 @@
     import ApiRequest from '../ApiRequest.svelte';
     import { onMount } from 'svelte';
 
+    let username = '';
     let email = '';
     let password = '';
-    let errors = { email: '', password: '' };
+    let repeatPassword = '';
+    let errors = { email: '', password: '', username: '', repeatPassword: '' };
     let isLoading = false;
+    let IsLoginForm = true;  
+    let role = 0;
+    let lobbyId =  Math.floor(Math.random() * 4) + 1;
+
+    let animationName = ""
+
+    let changeDisplay = () => {
+        if (IsLoginForm) {
+            animationName = "hideForm";
+            IsLoginForm = false;
+            let random =  Math.floor(Math.random() * 4) + 1;
+            lobbyId = random;
+            console.log(lobbyId);
+            
+        }
+        else {
+            animationName = "showForm";
+            IsLoginForm = true;
+        }
+    }
 
     function validate() {
-        errors = { email: '', password: '' };
+        errors = {username:'', email: '', password: '', repeatPassword: '' };
         let isValid = true;
-
-        if (!password) {
+        if (IsLoginForm) {
+            if (!password) {
             errors.password = 'Le mot de passe est requis';
             isValid = false;
+            }
+            if (!email) {
+                errors.email = 'L\'email est requis';
+                isValid = false;
+            } else if (!/\S+@\S+\.\S+/.test(email)) {
+                errors.email = 'L\'email est invalide';
+                isValid = false;
+            }
         }
-        if (!email) {
-            errors.email = 'L\'email est requis';
-            isValid = false;
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-            errors.email = 'L\'email est invalide';
-            isValid = false;
-        }
+        
 
         return isValid;
     }
@@ -44,18 +68,31 @@
 
     function handleSubmit(event) {
         event.preventDefault();
-
-        if (apiRequestComponent) {
-            if (validate()) {
-                isLoading = true;
-                console.log('Form data:', { email, password });
-                apiRequestComponent.makeRequest();
+        if (IsLoginForm) {
+            if (apiRequestComponent) {
+                if (validate()) {
+                    isLoading = true;
+                    console.log('Form data:', { email, password });
+                    apiRequestComponent.makeRequest();
+                }
             }
         }
+        else {
+            if (apiRequestComponent) {
+                if (validate()) {
+                    isLoading = true;
+                    console.log('Form data:', { username, email, password, repeatPassword });
+                    apiRequestComponent.makeRequest();
+                }
+            }
+        }
+        
     }
 
     // Fonction pour ajouter une particule
     function addParticle(e) {
+        console.log(`Mouse moved at: ${e.pageX}px, ${e.pageY}px`); // Log position
+
         let cursor = document.getElementById('magic-cursor');
         let particle = document.createElement('div');
         particle.classList.add('particle');
@@ -68,8 +105,6 @@
         particle.style.borderRadius = "50%";
         particle.style.zIndex = "1000";
 
-        console.log(`Particle position: ${e.pageX}px, ${e.pageY}px`);
-
         cursor.appendChild(particle);
 
         setTimeout(() => {
@@ -79,12 +114,13 @@
 </script>
 
 <main>
-    <div id="magic-cursor" on:mousemove={addParticle}></div>
-    <section class="login">
+    {#if IsLoginForm}
+    <section class="login" style={animationName !== "" ? "animationName: hideForm" : ""}>
+        <div id="magic-cursor" on:mousemove={addParticle} role="button" tabindex="0"></div>
         <form on:submit={handleSubmit}>
             <div class="input-div">
                 <input 
-                    type="text" 
+                    type="email" 
                     name="email" 
                     id="email" 
                     bind:value={email} 
@@ -112,8 +148,9 @@
 
             <input type="submit" value="Connecter">
         </form>
-        <p class="change-display">Vous n'avez pas de compte ? <span>En créer un !</span></p>
+        <p class="change-display">yout not have a account ? <a href="#" on:click={changeDisplay}> Create account !</a></p>
     </section>
+    {/if}
 
     {#if isLoading}
         <div class="loader-container">
@@ -133,6 +170,85 @@
         onSuccess={handleSuccess}
         onError={handleError}
     />
+
+{#if !IsLoginForm}
+<section>
+    <form on:submit={handleSubmit}>
+        <div class="input-div">
+            <input 
+                type="text" 
+                name="username" 
+                id="username" 
+                bind:value={username} 
+                placeholder="Username" 
+                required
+            >
+            {#if errors.username}
+                <p class="error">{errors.username}</p>
+            {/if}
+        </div>
+        <div class="input-div">
+            <input 
+                type="email" 
+                name="email" 
+                id="email" 
+                bind:value={email} 
+                placeholder="Email" 
+                required
+            >
+            {#if errors.email}
+                <p class="error">{errors.email}</p>
+            {/if}
+        </div>
+        <div class="input-div">
+            <input 
+                type="password" 
+                name="password" 
+                id="paswword" 
+                bind:value={password} 
+                placeholder="Password" 
+                required
+            >
+            {#if errors.password}
+                <p class="error">{errors.password}</p>
+            {/if}
+        </div>
+        <div class="input-div">
+            <input 
+                type="password" 
+                name="repeat-password" 
+                id="repeat-password" 
+                bind:value={repeatPassword} 
+                placeholder="Reapeat-password" 
+                required
+            >
+            {#if errors.password}
+                <p class="error">{errors.password}</p>
+            {/if}
+        </div>
+        <input type="submit" value="Register">
+        <p class="change-display">You have a account ? <a href="#" on:click={changeDisplay}> Login !</a></p>
+    </form>
+</section>
+{#if isLoading}
+<div class="loader-container">
+    <div class="loader">
+        <div class="wand"></div>
+        <div class="sparkles"></div>
+    </div>
+    <p class="loading-text">Chargement... ⚡</p>
+</div>
+{/if}
+
+<ApiRequest
+bind:this={apiRequestComponent}
+method="POST"
+endpoint="/registre"
+data={{ username, email, password, repeatPassword, role, lobbyId }}
+onSuccess={handleSuccess}
+onError={handleError}
+/>
+{/if}
 </main>
 
 <style lang="scss">
@@ -206,7 +322,7 @@
 
     .change-display {
         color: white;
-        span {
+        a {
             color: #6f00ff;
             cursor: pointer;
             &:hover {

@@ -5,7 +5,7 @@ const userSchema = Joi.object({
     email: Joi.string().email().required(),
     username: Joi.string().min(3).required(),
     password: Joi.string()
-        .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),  //for 1Maj min, 1 number min and 5 character min ^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,}$
+        .pattern(new RegExp('^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,}$')),  //1Maj min, 1 number min and 5 character min 
     repeatPassword: Joi.ref('password'),
     lobbyId: Joi.number()
         .integer().valid(0, 1, 2, 3),
