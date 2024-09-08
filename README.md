@@ -1,3 +1,11 @@
+# A props du projet
+Ce projet est encore en développement et n'est donc pas encore terminé, n'hésitez pas à revenir plus tard pour plus d'information
+
+## Objectif
+- Apprendre NodeJs pour faire l'api d'un blog Harry potter en utilisant de bonnes pratiques
+- Développer d'avantage ma capacité à conceptualiser une base de données en mongoDb et la structure d'un projet full-stack en étant exigeant autant sur la partie back que front
+- Apprendre Svelte pour faire la partie front du projet
+
 # API Documentation
 
 | Endpoint                | Méthode | Paramètres Requis                                                                                                                                                                                                                               | Description                                                                                                        |
