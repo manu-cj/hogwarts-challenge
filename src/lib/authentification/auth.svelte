@@ -29,14 +29,38 @@
         }
     }
 
-    function validate() {
+    function validate(username, email, password, repeatPassword) {
         errors = {username:'', email: '', password: '', repeatPassword: '' };
         let isValid = true;
         if (IsLoginForm) {
             if (!password) {
-            errors.password = 'Le mot de passe est requis';
-            isValid = false;
+                errors.password = 'Le mot de passe est requis.';
+                isValid = false;
             }
+            if (!email) {
+                errors.email = 'L\'email est requis.';
+                isValid = false;
+            } else if (!/\S+@\S+\.\S+/.test(email)) {
+                errors.email = 'L\'email est invalide.';
+                isValid = false;
+            }
+        }
+        else {
+            if (username !== null) {
+                if (!username) {
+                errors.username = 'Veuillez choisir un nom d\'utilisateur.'
+                isValid = false;
+                } else if (username.length < 3) {
+                    errors.username = `il manque ${3-username.length} charactères à votre nom d'utilisateur.`
+                    isValid = false;
+                }
+                else if (username.length > 20){
+                    errors.username = `il y a ${username.length-20} charactères en trop à votre nom d'utilisateur.`
+                    isValid = false;
+                }
+            }
+            
+           if (email !== null) {
             if (!email) {
                 errors.email = 'L\'email est requis';
                 isValid = false;
@@ -44,6 +68,24 @@
                 errors.email = 'L\'email est invalide';
                 isValid = false;
             }
+           }
+            if (password !== null) {
+                if (!password) {
+                    errors.password = 'Le mot de passe est requis.';
+                    isValid = false;
+                } else if (!/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{5,}$/.test(password)) {
+                    errors.password = 'Le mot de passe doit contenir au moins 5 caractères, dont une majuscule et un chiffre.';
+                    isValid = false;
+                }
+            }
+            
+            if (repeatPassword !== null) {
+                if (password !== repeatPassword) {
+                    errors.repeatPassword = 'Le repeat-password doit être identique au password !'
+                    isValid = false;
+                }
+            }
+            
         }
         
 
@@ -70,7 +112,7 @@
         event.preventDefault();
         if (IsLoginForm) {
             if (apiRequestComponent) {
-                if (validate()) {
+                if (validate(null, email, password, null)) {
                     isLoading = true;
                     console.log('Form data:', { email, password });
                     apiRequestComponent.makeRequest();
@@ -79,15 +121,21 @@
         }
         else {
             if (apiRequestComponent) {
-                if (validate()) {
+                if (validate(username, email, password, repeatPassword)) {
                     isLoading = true;
                     console.log('Form data:', { username, email, password, repeatPassword });
                     apiRequestComponent.makeRequest();
+                    IsLoginForm = true;
+                    username = '';
+                    email = '';
+                    password = '';
+                    repeatPassword = '';
                 }
             }
         }
         
     }
+
 
     // Fonction pour ajouter une particule
     function addParticle(e) {
@@ -180,6 +228,7 @@
                 name="username" 
                 id="username" 
                 bind:value={username} 
+                on:keyup={validate(username, null, null, null)}
                 placeholder="Username" 
                 required
             >
@@ -223,7 +272,7 @@
                 required
             >
             {#if errors.password}
-                <p class="error">{errors.password}</p>
+                <p class="error">{errors.repeatPassword}</p>
             {/if}
         </div>
         <input type="submit" value="Register">
@@ -302,6 +351,7 @@ onError={handleError}
     }
 
     form {
+        width: 300px;
         display: flex;
         flex-direction: column;
 
