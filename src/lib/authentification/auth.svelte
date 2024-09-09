@@ -96,7 +96,9 @@
         console.log("Réponse de l'API :", data);
         setTimeout(() => {
             isLoading = false;
+            window.location.href = '/';
         }, 500);
+        
     }
 
     function handleError(error) {
