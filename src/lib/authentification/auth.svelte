@@ -11,8 +11,13 @@
     let IsLoginForm = true;  
     let role = 0;
     let lobbyId =  Math.floor(Math.random() * 4) + 1;
+    const isLogin = JSON.parse(localStorage.getItem('isLogin'));
 
     let animationName = ""
+    
+    if (isLogin) {
+        window.location.href = '/';
+    }
 
     let changeDisplay = () => {
         if (IsLoginForm) {
@@ -94,9 +99,17 @@
 
     function handleSuccess(data) {
         console.log("Réponse de l'API :", data);
+        console.log(data.message);
+        if (data.message === "Connexion réussie.") {
+            localStorage.setItem('tokens', JSON.stringify({
+            token: data.accessToken,
+            refreshToken: data.refreshToken
+            }));
+            localStorage.setItem('isLogin', true);
+        }
         setTimeout(() => {
             isLoading = false;
-            window.location.href = '/';
+            // window.location.href = '/';
         }, 500);
         
     }
@@ -162,6 +175,8 @@
         }, 1000);
     }
 </script>
+{#if !isLogin}
+    
 
 <main>
     {#if IsLoginForm}
@@ -301,7 +316,7 @@ onError={handleError}
 />
 {/if}
 </main>
-
+{/if}
 <style lang="scss">
     #magic-cursor {
         position: fixed;

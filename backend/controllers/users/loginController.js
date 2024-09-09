@@ -50,7 +50,6 @@ export async function login(req, res) {
  user.refreshToken = refreshToken;
  await user.save();
 
-
  return res.status(200).json({
      message: "Connexion réussie.",
      accessToken,
