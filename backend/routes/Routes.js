@@ -10,7 +10,7 @@ import { getMessages } from "../controllers/lobby/getMessageController.js";
 import { getResponses } from "../controllers/lobby/getResponseController.js";
 import { getMessageById } from "../controllers/lobby/getMessageByIdController.js";
 import { getNotifications } from "../controllers/users/getNotificationsController.js";
-
+import { getUser } from "../controllers/users/getUserController.js";
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.get("/get-lobby-messages", verifyAccessToken, getMessages);
 router.get('/get-responses-message', verifyAccessToken, getResponses);
 router.get('/get-message', verifyAccessToken, getMessageById)//affiche le message correspondant à l'id
 router.get('/get-notifications', verifyAccessToken, getNotifications);
-
+router.get('/get-user', verifyAccessToken, getUser);
 
 //Routes put
  

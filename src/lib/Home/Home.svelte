@@ -6,11 +6,15 @@
     let page = 1;
     let limit = 10;
     const tokens = JSON.parse(localStorage.getItem('tokens'));
-    const lobbyUser = 1
+    const user = JSON.parse(localStorage.getItem('user'));
+    const lobbyUser = user.lobbyId
     let allMessages = [];
     let filteredMessages
     
     let apiRequestComponent;
+    let getUserData;
+
+    
 
     if (!tokens || !tokens.accessToken) {
         console.error('Le token n\'a pas été trouvé dans le localStorage.');
@@ -20,8 +24,9 @@
 
     let handleSuccess = (data) => {
         console.log("Réponse de l'API :", data.messages);
-        console.log(data.message);
+        console.log(data);
         allMessages = data.messages
+        filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser)
     }
     let handleError = (data) => {
         console.log("Réponse de l'API :", data.response.data.message);
@@ -40,7 +45,7 @@
     let refreshToken = async (onSuccess, onError) => {
     const url = 'http://localhost:5000/api/refresh-token';
     const method = 'POST';
-    const data = { refreshToken: tokens.refreshToken }; // Assure-toi que `tokens` est défini
+    const data = { refreshToken: tokens.refreshToken };
 
     try {
         const response = await axios({
@@ -76,6 +81,13 @@
         } else {
             console.error('La méthode makeRequest n\'existe pas sur le composant.');
         }
+
+        if (tokens) {
+        if (getUserData) {
+            // Appel après la mise à jour du localStorage
+            getUserData.makeRequest();
+        }
+    }
     });
     
 
@@ -90,13 +102,30 @@
             return `Mis à jour le ${updatedAtDate.toLocaleString()}`;
         }
     }
-    
+
+    let getUserSuccess = (data) => {
+        console.log("Réponse de l'API :", data);
+        localStorage.setItem("user", JSON.stringify({
+            _id: data._id,
+            email: data.email,
+            username: data.username,
+            lobbyId: data.lobbyId
+        }));
+    }
+
+    let getUserError = (data) => {
+        console.log(tokens);
+        
+        console.log(data.response.data.message);
+        
+    }
+   
 </script>
 
 <h1>Accueil</h1>
 <p>Bienvenue sur la page d'accueil !</p>
 {#each allMessages as message}
-{ filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser)}
+
 {#if filteredMessages.length === 0}
     <p>Aucun message trouvé pour ce lobby.</p>
 {:else}
@@ -122,4 +151,15 @@
     }}
     onSuccess={handleSuccess}
     onError={handleError}
+/>
+
+<ApiRequest
+    bind:this={getUserData}  
+    method="GET"
+    endpoint={`/get-user`}
+    headers={{ 
+        Authorization: `Bearer ${tokens.accessToken}`  // Ajout du token Bearer
+    }}
+    onSuccess={getUserSuccess}
+    onError={getUserError}
 />

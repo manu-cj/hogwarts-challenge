@@ -14,7 +14,7 @@ export function verifyAccessToken(req, res, next) {
     // Extrait le token du header Authorization
     const token = authHeader.split(' ')[1];
     if (!token) {
-        return res.status(401).json({ message: 'Token invalide.' });
+        return res.status(401).json({ message: 'Token invalide. !' });
     }
 
     // Vérifie et décode le token

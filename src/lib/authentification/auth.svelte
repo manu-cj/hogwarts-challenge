@@ -12,7 +12,7 @@
     let role = 0;
     let lobbyId =  Math.floor(Math.random() * 4) + 1;
     const isLogin = JSON.parse(localStorage.getItem('isLogin'));
-
+    
     let animationName = ""
     
     if (isLogin) {
@@ -107,6 +107,11 @@
             }));
             localStorage.setItem('isLogin', true);
         }
+        const tokens = JSON.parse(localStorage.getItem('tokens'));
+
+        
+        
+
         setTimeout(() => {
             isLoading = false;
             window.location.href = '/';
@@ -174,6 +179,8 @@
             particle.remove();
         }, 1000);
     }
+
+    
 </script>
 {#if !isLogin}
     
@@ -235,6 +242,7 @@
         onSuccess={handleSuccess}
         onError={handleError}
     />
+    
 
 {#if !IsLoginForm}
 <section>
