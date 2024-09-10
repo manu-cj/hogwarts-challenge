@@ -141,13 +141,13 @@
 {/if}
 {/each}
 
-<!-- Utilisation correcte du composant ApiRequest avec passage de props -->
+
 <ApiRequest
     bind:this={apiRequestComponent}  
     method="GET"
     endpoint={`/get-lobby-messages?page=${page}&limit=${limit}`}
     headers={{ 
-        Authorization: `Bearer ${tokens.accessToken}`  // Ajout du token Bearer
+        Authorization: `Bearer ${tokens.accessToken}`  
     }}
     onSuccess={handleSuccess}
     onError={handleError}
@@ -158,7 +158,7 @@
     method="GET"
     endpoint={`/get-user`}
     headers={{ 
-        Authorization: `Bearer ${tokens.accessToken}`  // Ajout du token Bearer
+        Authorization: `Bearer ${tokens.accessToken}`
     }}
     onSuccess={getUserSuccess}
     onError={getUserError}
