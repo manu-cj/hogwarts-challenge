@@ -2,6 +2,7 @@
     const isLogin = JSON.parse(localStorage.getItem('isLogin'));
 if (isLogin) {
     localStorage.setItem("isLogin", false);
+    localStorage.removeItem("tokens");
     window.location.href = '/';
 } else {
     window.location.href = '/';

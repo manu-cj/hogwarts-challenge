@@ -16,8 +16,6 @@ const mongo_url = `mongodb+srv://${mongo_user}:${mongo_password}@cluster0.su39j.
 mongoose.connect(mongo_url)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
-
-
 const app = express();
 
 app.use(cors({
@@ -30,7 +28,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 import Routes from './routes/Routes.js'; 
 Routes(app);
-
 
 const PORT = 5000;
 

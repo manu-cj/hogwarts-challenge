@@ -102,14 +102,14 @@
         console.log(data.message);
         if (data.message === "Connexion réussie.") {
             localStorage.setItem('tokens', JSON.stringify({
-            token: data.accessToken,
+            accessToken: data.accessToken,
             refreshToken: data.refreshToken
             }));
             localStorage.setItem('isLogin', true);
         }
         setTimeout(() => {
             isLoading = false;
-            // window.location.href = '/';
+            window.location.href = '/';
         }, 500);
         
     }
