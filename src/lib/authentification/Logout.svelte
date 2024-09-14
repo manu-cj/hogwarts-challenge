@@ -3,9 +3,9 @@
 if (isLogin) {
     localStorage.setItem("isLogin", false);
     localStorage.removeItem("tokens");
-    window.location.href = '/';
+    window.location.href = '/auth';
 } else {
-    window.location.href = '/';
+    window.location.href = '/auth';
 }
     
 </script>
