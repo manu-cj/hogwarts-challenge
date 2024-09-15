@@ -6,6 +6,9 @@
     import Hufflepuff from './../../assets/house/hufflepuff-removebg-preview.png'
     import Ravenclaw from './../../assets/house/ravenclaw-removebg-preview.png'
     import Slytherin from './../../assets/house/slytherin-removebg-preview.png'
+    import pencil from './../../assets/icons/pencil-alt-solid.svg';
+    import trash from './../../assets/icons/trash-alt-solid.svg';
+
 
     let page = 1;
     let limit = 10;
@@ -16,6 +19,7 @@
     let filteredMessages;
     let acceuil = "acceuil";
     let housePicture = "";
+    let order = "ASC";
     
     let apiRequestComponent;
     let getUserData;
@@ -87,7 +91,7 @@
     return baseTheme;
     };
 
-    const myTheme = theme(4); 
+    const myTheme = theme(3); 
     console.log(myTheme);
 
 
@@ -173,9 +177,9 @@
         const updatedAtDate = new Date(updated_at);
 
         if (createdAtDate >= updatedAtDate) {
-            return `Créé le ${createdAtDate.toLocaleString()}`;
+            return `Create : ${createdAtDate.toLocaleString()}`;
         } else {
-            return `Mis à jour le ${updatedAtDate.toLocaleString()}`;
+            return `Update : ${updatedAtDate.toLocaleString()}`;
         }
     }
 
@@ -195,13 +199,30 @@
         console.log(data.response.data.message);
         
     }
-   
+   let pencilColor = "white";
 </script>
 <main style="background-color: {myTheme.colors.primary};">
     <h1>{acceuil}</h1>
-    <img src={housePicture} alt={acceuil}>
+    <img src={housePicture} alt={acceuil} width="120px">
     <p>Bienvenue {user.username} !</p>
     <section class="messages">
+        <div class="control-section">
+            <input type="search" name="search" id="search"  placeholder="Search">
+            <div class="control-group">
+                {#if order === "ASC"}
+                <button on:click={() => {order = "DESC"}}>
+                    Order 🔺
+                </button>
+                {:else}
+                    <button on:click={() => { order = "ASC"}}>
+                        Order 🔻
+                    </button>
+                {/if}
+                
+                <button>New topic</button>
+            </div>
+            
+        </div>
         {#each allMessages as message}
 
         {#if filteredMessages.length === 0}
@@ -211,9 +232,15 @@
                 <article class="message" style="background-color: {myTheme.colors.background}; border-color: {myTheme.colors.secondary};">
                     <div class="message-header" style="background-color: {myTheme.colors.primary};">
                         <p class="author">Author : <span>{message.author}</span></p>
-                        <p>  {getMostRecentDate(message.createdAt, message.updatedAt)}</p>   
+                        <p>{getMostRecentDate(message.createdAt, message.updatedAt)}</p>   
                     </div>
                     <div class="message-content">
+                        <div class="control">
+                            {#if user._id !== message.author_id}
+                                <img class="pencil" src={pencil} alt="pencil" width="15px">
+                                <img class="trash" src={trash} alt="trash" width="15px">
+                            {/if}
+                        </div>
                         <h3>{message.sujet}</h3>
                         <blockquote>{message.message}</blockquote>
                     </div>
@@ -223,7 +250,6 @@
         {/each}
     </section>
 </main>
-
 
 
 <ApiRequest
@@ -256,8 +282,8 @@ main {
      justify-content: start;
      align-items: center;
      gap: 30px;
-
 }
+
 .messages {
     width: 75%;
     padding: 15px 30px;
@@ -274,16 +300,86 @@ main {
     -webkit-backdrop-filter: blur( 6px );
     border-radius: 10px;
     border: 1px solid rgba( 255, 255, 255, 0.18 );
+
+    .control-section {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 30px;
+
+        input[type=search] {
+            width: 300px;
+            height: 40px;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.315);
+            border: 1px #FFD700 solid;
+            transition: all 0.3s ease-out;
+            
+            &:hover, &:focus {
+                scale: 1.05;
+                box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+            }
+        }
+        .control-group {
+            width: 75%;
+            display: flex;
+            flex-direction: row;
+            justify-content: end;
+            gap: 15px;
+
+            button {
+                position: relative;
+                color: black;
+                background-color: rgba(255, 255, 255, 0.612);
+                border: 1px #FFD700 solid;
+                transition: all 0.3s ease-in;
+                border-radius: 5px;
+
+                &:hover {
+                    transform: scale(1.05); 
+                    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
+                }
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: radial-gradient(circle, #ffa200, #ffbb00);
+                    transition: opacity 0.5s ease-in; 
+                    opacity: 0;
+                    z-index: -1; 
+                    border-radius: 5px;
+                }
+
+                &:hover::before {
+                    opacity: 1; 
+                }
+            }
+        }
+
+        
+    }
 }
 .message {
     width: 80%;
-    height: 150px;
+    height: 200px;
     border: 3px solid;
     border-radius: 5px;
     box-shadow: 0 8px 32px 0 rgba(151, 147, 19, 0.37);
     backdrop-filter: blur( 6px );
     -webkit-backdrop-filter: blur( 6px );
     border-radius: 10px;
+    transition: all ease-out 0.3s;
+    &:hover {
+        scale: 1.03;
+        box-shadow: rgba(50, 50, 93, 0.25) 2px 8px 15px -4px, rgba(0, 0, 0, 0.3) 3px 6px 10px -5px;
+    }
 
     .message-header {
         width: 100%;
@@ -295,11 +391,30 @@ main {
         display: flex;
         justify-content: space-between;
 
-        .author {
+        p {
             span {
                 font-weight: bold;
             } 
         }
     }
-}    
+
+    .message-content {
+        .control {
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            
+            .pencil {
+                &:hover {
+                    color: blue;
+
+                }
+            }
+        }
+    }
+}  
 </style>
