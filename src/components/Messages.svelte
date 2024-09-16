@@ -9,91 +9,27 @@
     import Ravenclaw from './../assets/house/ravenclaw-removebg-preview.png'
     import Slytherin from './../assets/house/slytherin-removebg-preview.png'
 
-
+    export let user = {};
+    export let myTheme = {};
+    const { _id, email, username, lobbyId } = user;
 
     let page = 1;
     let limit = 10;
     const tokens = JSON.parse(localStorage.getItem('tokens'));
-    let user = JSON.parse(localStorage.getItem('user'));
     const lobbyUser = user.lobbyId
+
     let allMessages = [];
     let filteredMessages;
     let acceuil = "acceuil";
     let housePicture = "";
     let order = "ASC";
     let posts = [];
-    let error = null;
 
+    // PROPS
+ 
+    
+    
 
-    const theme = (lobbyUser) => {
-    let baseTheme;
-
-    switch (lobbyUser) {
-        case 1: 
-        acceuil = "Gryffindor";
-        housePicture = Gryffindor;
-        baseTheme = {
-            colors: {
-            primary: "#6e1414",   
-            secondary: "#8B5B29", 
-            background: "#1e1e1e",
-            text: "#cccccc",
-            },
-        };
-        break;
-        case 2: 
-        acceuil = "Ravenclaw";
-        housePicture = Ravenclaw;
-        baseTheme = {
-            colors: {
-            primary: "#545bdbd1",  
-            secondary: "#3b4a6b", 
-            background: "#1e1e1e",
-            text: "#cccccc",
-            },
-        };
-        break;
-        case 3: 
-        acceuil = "Hufflepuff";
-        housePicture = Hufflepuff;
-        baseTheme = {
-            colors: {
-            primary: "#a6981b",   
-            secondary: "#6d6d6d", 
-            background: "#1e1e1e",
-            text: "#cccccc",
-            },
-        };
-        break;
-        case 4: 
-        acceuil = "Slytherin";
-        housePicture = Slytherin;
-        baseTheme = {
-            colors: {
-            primary: "#17642b",  
-            secondary: "#2c3e50", 
-            background: "#1e1e1e",
-            text: "#cccccc",
-            },
-        };
-        break;
-        default:
-        baseTheme = {
-            colors: {
-            primary: "#666666",   
-            secondary: "#777777",
-            background: "#1e1e1e",
-            text: "#cccccc",
-            },
-        };
-        break;
-    }
-
-    return baseTheme;
-    }; 
-
-    const myTheme = theme(1); 
-    console.log(myTheme);
 
     function getMostRecentDate(created_at, updated_at) {
         const createdAtDate = new Date(created_at);
@@ -123,7 +59,7 @@
                 refreshToken(
                     (data) => {
                         console.log('Token rafraîchi avec succès:', data);
-                        window.location.href = '#/lobby';
+                        window.location.href = '#/';
                     },
                     (error) => {
                         console.error('Erreur lors du rafraîchissement du token:', error.response ? error.response.data : error.message);
@@ -134,28 +70,28 @@
     }
     const getDataUser = async () => {
         try {
-      const data = await apiRequest({
-        token: tokens.accessToken,
-        endpoint: `/get-user`,
-        method: 'GET'
-      });
-      user = {
-            _id: data._id,
-            email: data.email,
-            username: data.username,
-            lobbyId: data.lobbyId
-        }
+        const data = await apiRequest({
+            token: tokens.accessToken,
+            endpoint: `/get-user`,
+            method: 'GET'
+        });
+        user = {
+                _id: data._id,
+                email: data.email,
+                username: data.username,
+                lobbyId: data.lobbyId
+            }
      
-      console.log(allMessages);
-    } catch (err) {
-      error = err.message; 
-      console.log(error);   
-    }
+        console.log(allMessages);
+        } catch (err) {
+        error = err.message; 
+        console.log(error);   
+        }
     }
 
     onMount(async () => {
-        getAllMessages();   
-        getDataUser();
+        await getAllMessages();   
+        await getDataUser();
     });
 
 
@@ -194,9 +130,7 @@
         }
     }
 </script>
-<main style="background-color: {myTheme.colors.primary};">
-    <h1>{acceuil}</h1>
-    <img src={housePicture} alt={acceuil} width="120px">
+
     <p>Bienvenue {user.username} !</p>
     <section class="messages">
         <div class="control-section">
@@ -242,7 +176,7 @@
         {/if}
         {/each}
     </section>
-</main>
+
 <style lang="scss">
 main {
      width: 100%;
