@@ -1,28 +1,29 @@
 <script>
-    import { onMount } from 'svelte';  // Import de onMount pour l'appel après montage du composant
-    import ApiRequest from './../ApiRequest.svelte';
+	import { apiRequest } from './../api/ApiRequest';
+    import { onMount } from 'svelte';
     import axios from 'axios';
-    import Gryffindor from './../../assets/house/Gryffindor-removebg-preview.png'
-    import Hufflepuff from './../../assets/house/hufflepuff-removebg-preview.png'
-    import Ravenclaw from './../../assets/house/ravenclaw-removebg-preview.png'
-    import Slytherin from './../../assets/house/slytherin-removebg-preview.png'
-    import pencil from './../../assets/icons/pencil-alt-solid.svg';
-    import trash from './../../assets/icons/trash-alt-solid.svg';
+    import pencil from './../assets/icons/pencil-alt-solid.svg';
+    import trash from './../assets/icons/trash-alt-solid.svg';
+    import Gryffindor from './../assets/house/Gryffindor-removebg-preview.png'
+    import Hufflepuff from './../assets/house/hufflepuff-removebg-preview.png'
+    import Ravenclaw from './../assets/house/ravenclaw-removebg-preview.png'
+    import Slytherin from './../assets/house/slytherin-removebg-preview.png'
+
 
 
     let page = 1;
     let limit = 10;
     const tokens = JSON.parse(localStorage.getItem('tokens'));
-    const user = JSON.parse(localStorage.getItem('user'));
+    let user = JSON.parse(localStorage.getItem('user'));
     const lobbyUser = user.lobbyId
     let allMessages = [];
     let filteredMessages;
     let acceuil = "acceuil";
     let housePicture = "";
     let order = "ASC";
-    
-    let apiRequestComponent;
-    let getUserData;
+    let posts = [];
+    let error = null;
+
 
     const theme = (lobbyUser) => {
     let baseTheme;
@@ -89,90 +90,12 @@
     }
 
     return baseTheme;
-    };
+    }; 
 
-    const myTheme = theme(3); 
+    const myTheme = theme(1); 
     console.log(myTheme);
 
-
-    if (!tokens || !tokens.accessToken) {
-        console.error('Le token n\'a pas été trouvé dans le localStorage.');
-    } else {
-        console.log('Token trouvé:', tokens.accessToken);
-    }
-
-    let handleSuccess = (data) => {
-        console.log("Réponse de l'API :", data.messages);
-        console.log(data);
-        allMessages = data.messages
-        filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser)
-    }
-    let handleError = (data) => {
-        console.log("Réponse de l'API :", data.response.data.message);
-        if (data.response.data.message === "Token expiré, fais une requète pour refresh le token.") {
-            refreshToken(
-                (data) => {
-                    console.log('Token rafraîchi avec succès:', data);
-                    window.location.href = '/';
-                },
-                (error) => {
-                    console.error('Erreur lors du rafraîchissement du token:', error.response ? error.response.data : error.message);
-                }
-            );
-        }
-    }
-
-    let refreshToken = async (onSuccess, onError) => {
-    const url = 'http://localhost:5000/api/refresh-token';
-    const method = 'POST';
-    const data = { refreshToken: tokens.refreshToken };
-
-    try {
-        const response = await axios({
-            method,
-            url,
-            data,
-        });
-
-        const newAccessToken = response.data.accessToken;
-        if (newAccessToken) {
-            const existingTokens = JSON.parse(localStorage.getItem('tokens')) || {};
-            localStorage.setItem('tokens', JSON.stringify({
-                ...existingTokens,
-                accessToken: newAccessToken
-            }));
-        }
-
-        if (onSuccess) {
-            onSuccess(response.data);
-        }
-    } catch (error) {
-        if (onError) {
-            onError(error);
-        } else {
-            console.error('Erreur lors du rafraîchissement du token:', error.response ? error.response.data : error.message);
-        }
-    }
-}
-
-    onMount(() => {
-        if (apiRequestComponent && apiRequestComponent.makeRequest) {
-            apiRequestComponent.makeRequest();
-        } else {
-            console.error('La méthode makeRequest n\'existe pas sur le composant.');
-        }
-
-        if (tokens) {
-        if (getUserData) {
-            // Appel après la mise à jour du localStorage
-            getUserData.makeRequest();
-        }
-    }
-    });
-    
-
     function getMostRecentDate(created_at, updated_at) {
-
         const createdAtDate = new Date(created_at);
         const updatedAtDate = new Date(updated_at);
 
@@ -183,23 +106,93 @@
         }
     }
 
-    let getUserSuccess = (data) => {
-        console.log("Réponse de l'API :", data);
-        localStorage.setItem("user", JSON.stringify({
+    const getAllMessages = async () => {
+        try {
+      const data = await apiRequest({
+        token: tokens.accessToken,
+        endpoint: `/get-lobby-messages?page=${page}&limit=${limit}`,
+        method: 'GET'
+        });
+        allMessages = data.messages; 
+        filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser)
+        console.log(allMessages);
+        } catch (err) {
+            error = err.message; 
+            console.log(error);
+            if (error === "Token expiré, fais une requète pour refresh le token.") {
+                refreshToken(
+                    (data) => {
+                        console.log('Token rafraîchi avec succès:', data);
+                        window.location.href = '#/lobby';
+                    },
+                    (error) => {
+                        console.error('Erreur lors du rafraîchissement du token:', error.response ? error.response.data : error.message);
+                    }
+                );
+            }
+        }
+    }
+    const getDataUser = async () => {
+        try {
+      const data = await apiRequest({
+        token: tokens.accessToken,
+        endpoint: `/get-user`,
+        method: 'GET'
+      });
+      user = {
             _id: data._id,
             email: data.email,
             username: data.username,
             lobbyId: data.lobbyId
-        }));
+        }
+     
+      console.log(allMessages);
+    } catch (err) {
+      error = err.message; 
+      console.log(error);   
+    }
     }
 
-    let getUserError = (data) => {
-        console.log(tokens);
-        
-        console.log(data.response.data.message);
-        
+    onMount(async () => {
+        getAllMessages();   
+        getDataUser();
+    });
+
+
+    let refreshToken = async (onSuccess, onError) => {
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const endpoint = '/refresh-token';
+        const url = `${baseURL}${endpoint}`;
+        const method = 'POST';
+        const data = { refreshToken: tokens.refreshToken };
+
+        try {
+            const response = await axios({
+                method,
+                url,
+                data,
+            });
+
+            const newAccessToken = response.data.accessToken;
+            if (newAccessToken) {
+                const existingTokens = JSON.parse(localStorage.getItem('tokens')) || {};
+                localStorage.setItem('tokens', JSON.stringify({
+                    ...existingTokens,
+                    accessToken: newAccessToken
+                }));
+            }
+
+                if (onSuccess) {
+                    onSuccess(response.data);
+                }
+        }   catch (error) {
+                if (onError) {
+                    onError(error);
+                } else {
+                    console.error('Erreur lors du rafraîchissement du token:', error.response ? error.response.data : error.message);
+                }
+        }
     }
-   let pencilColor = "white";
 </script>
 <main style="background-color: {myTheme.colors.primary};">
     <h1>{acceuil}</h1>
@@ -250,30 +243,6 @@
         {/each}
     </section>
 </main>
-
-
-<ApiRequest
-    bind:this={apiRequestComponent}  
-    method="GET"
-    endpoint={`/get-lobby-messages?page=${page}&limit=${limit}`}
-    headers={{ 
-        Authorization: `Bearer ${tokens.accessToken}`  
-    }}
-    onSuccess={handleSuccess}
-    onError={handleError}
-/>
-
-<ApiRequest
-    bind:this={getUserData}  
-    method="GET"
-    endpoint={`/get-user`}
-    headers={{ 
-        Authorization: `Bearer ${tokens.accessToken}`
-    }}
-    onSuccess={getUserSuccess}
-    onError={getUserError}
-/>
-
 <style lang="scss">
 main {
      width: 100%;
@@ -375,10 +344,15 @@ main {
     backdrop-filter: blur( 6px );
     -webkit-backdrop-filter: blur( 6px );
     border-radius: 10px;
-    transition: all ease-out 0.3s;
+    transition: all ease-out 0.5s;
     &:hover {
         scale: 1.03;
         box-shadow: rgba(50, 50, 93, 0.25) 2px 8px 15px -4px, rgba(0, 0, 0, 0.3) 3px 6px 10px -5px;
+
+        .message-header {
+            filter: brightness(1.25);
+            
+        }
     }
 
     .message-header {
@@ -390,6 +364,7 @@ main {
         border-top-right-radius: 7px;
         display: flex;
         justify-content: space-between;
+        transition: all ease-out 0.5s;
 
         p {
             span {

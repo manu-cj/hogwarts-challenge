@@ -2,9 +2,12 @@
 import Router from 'svelte-spa-router'
 import {link} from 'svelte-spa-router'
 
-import Home from "./lib/Home/Home.svelte"
-import Auth from "./lib/authentification/auth.svelte";
-import Logout from "./lib/authentification/Logout.svelte";
+import Home from "./routes/Home.svelte";
+import Auth from "./routes/auth.svelte";
+import Logout from "./routes/Logout.svelte";
+import Messages from './components/Messages.svelte';
+
+
 
 const isLogin = JSON.parse(localStorage.getItem('isLogin'));
 

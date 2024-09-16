@@ -1,5 +1,5 @@
 <script>
-    import ApiRequest from '../ApiRequest.svelte';
+    import ApiRequest from '../api/ApiRequest.svelte'
     import { onMount } from 'svelte';
 
     let username = '';
