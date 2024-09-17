@@ -13,8 +13,6 @@ const routes = {
   '/': Home,
   '/auth': Auth,
   '/logout': Logout,
-  '/login': Login,
-  '/register': Register
 };
 
 </script>
