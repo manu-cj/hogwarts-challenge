@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "server": "nodemon backend/server.js",
+    "start": "nodemon backend/server.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -35,7 +35,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.3",
     "nodemon": "^3.1.4",
+    "svelte-notifications": "^0.9.98",
     "svelte-routing": "^2.13.0",
-    "svelte-spa-router": "^4.0.1"
+    "svelte-spa-router": "^4.0.1",
+    "svelte-toast": "^1.0.0"
   }
 }

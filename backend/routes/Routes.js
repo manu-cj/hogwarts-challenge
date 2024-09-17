@@ -15,7 +15,7 @@ import { getUser } from "../controllers/users/getUserController.js";
 const router = express.Router();
 
 // Routes POST
-router.post("/registre", addUser);
+router.post("/register", addUser);
 router.post("/auth", login);
 router.post('/refresh-token', refreshToken);
 router.post('/add-message', verifyAccessToken, addMessage);

@@ -24,6 +24,7 @@
     let housePicture = "";
     let order = "ASC";
     let posts = [];
+    let error = "";
 
     // PROPS
  
@@ -185,6 +186,7 @@ main {
      justify-content: start;
      align-items: center;
      gap: 30px;
+     min-height: 100vh;
 }
 
 .messages {
