@@ -205,11 +205,7 @@
         }
     }
 
-    .error {
-        color: red;
-        font-size: 0.9em;
-        margin-top: 0.5rem;
-    }
+    
 
     form {
         width: 300px;

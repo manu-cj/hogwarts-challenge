@@ -13,6 +13,7 @@ export async function apiRequest({ token = null, endpoint, method = "GET", data 
 
     try {
         const response = await axios({
+            withCredentials: true,
             url,
             method,
             headers,

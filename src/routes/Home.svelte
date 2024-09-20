@@ -1,4 +1,6 @@
 <script>
+	import AddPost from './../components/AddPost.svelte';
+	import NavBar from './../components/NavBar.svelte';
     import Messages from './../components/Messages.svelte';
     import { onMount } from 'svelte';
     import { apiRequest } from './../api/ApiRequest';
@@ -7,7 +9,7 @@
     import Hufflepuff from './../assets/house/hufflepuff-removebg-preview.png'
     import Ravenclaw from './../assets/house/ravenclaw-removebg-preview.png'
     import Slytherin from './../assets/house/slytherin-removebg-preview.png'
-
+    import { tokenStore, updateAccessToken } from './../store/tokenStore.js'
   
     const tokens = JSON.parse(localStorage.getItem('tokens'));
     let user = null;
@@ -16,7 +18,7 @@
     let housePicture = "";
     let lobbyUser = '';
     let myTheme = { colors: { primary: "#666666", secondary: "#777777", background: "#1e1e1e", text: "#cccccc" } };
-
+    let tokenIsRefresh = false
 
     const theme = (lobbyUser) => {
     let baseTheme;
@@ -108,8 +110,12 @@
             refreshToken(
                 (data) => {
                     console.log('Token rafraîchi avec succès:', data);
-                    error = null
-                    window.location.href = '#/';
+                    error = null;
+                    tokenIsRefresh === false ? tokenIsRefresh = true: tokenIsRefresh = false;
+                    setTimeout(() => {
+                        window.location.href = '#/';
+                    }, 100);  // Délai de 100ms avant la redirection
+                    
                 },
                 (error) => {
                     console.error('Erreur lors du rafraîchissement du token:', error.response ? error.response.data : error.message);
@@ -135,16 +141,11 @@
 
             const newAccessToken = response.data.accessToken;
             if (newAccessToken) {
-                const existingTokens = JSON.parse(localStorage.getItem('tokens')) || {};
-                localStorage.setItem('tokens', JSON.stringify({
-                    ...existingTokens,
-                    accessToken: newAccessToken
-                }));
+                updateAccessToken(newAccessToken, tokens.refreshToken);
             }
-
-                if (onSuccess) {
-                    onSuccess(response.data);
-                }
+               console.log(response.data);
+               
+                window.location.reload();
         }   catch (error) {
                 if (onError) {
                     onError(error);
@@ -160,8 +161,9 @@
 
     let loading = true
   </script>
-  
+
 <main style="background-color: {myTheme.colors.primary};">
+    <NavBar/> 
     <h1>{acceuil}</h1>
     <img src={housePicture} alt={acceuil} width="120px">
 {#if user}
@@ -178,11 +180,13 @@
         <p class="loading-text">Chargement... ⚡</p>
     </div>
 {/if}
+
 </main>
 
 <style lang="scss">
     main {
         width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: start;

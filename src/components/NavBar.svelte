@@ -10,17 +10,20 @@
         const granimInstance = new Granim({
             element: '#granim-canvas',
             name: 'granim',
-            direction: 'radial',
+            direction: 'top-bottom',
             opacity: [1, 1],
             isPausedWhenNotInView: true,
             states: {
                 "default-state": {
                     gradients: [
-                        ['#2C3E50', '#505e5e'], 
-                        ['#5c5c5c', '#2C3E50'], 
-                        ['#505e5e', '#2C2E69'],  
-                    ]
+                ['#c5c6c7', '#556270'],
+                ['#c5c6c7', '#556270'],
+                ['#556270', '#c5c6c7'],
+                ['#556270', '#c5c6c7']
+            ],
+                    transitionSpeed: 1500
                 }
+                
             }
         });
     });
@@ -50,9 +53,12 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        
+        background-color: rgba(121, 121, 121, 0.178);
         color: #ECF0F1;
-        border-bottom-left-radius: 10px;
-        border-bottom-right-radius: 10px;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+       
 
         #granim-canvas {
             position: absolute;
@@ -63,6 +69,7 @@
             z-index: -1;
             border-bottom-left-radius: 10px;
             border-bottom-right-radius: 10px;
+            
         }
 
         a {

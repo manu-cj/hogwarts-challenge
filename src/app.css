@@ -88,6 +88,14 @@ button:focus-visible {
   }
 }
 
+.error {
+  color: red;
+  font-weight: 600;
+  font-size: 0.9em;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 
 .loader-container {
   position: fixed;

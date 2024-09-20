@@ -18,10 +18,13 @@ mongoose.connect(mongo_url)
   .catch((err) => console.error('Error connecting to MongoDB:', err));
 const app = express();
 
+
+
 app.use(cors({
-  origin: 'http://127.0.0.1:5173', // Allow only this origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
+  origin: 'http://127.0.0.1:5173', // URL du frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Méthodes autorisées
+  allowedHeaders: ['Content-Type', 'Authorization'], // En-têtes autorisés
+  credentials: true // Autorise les cookies et les en-têtes d'autorisation
 }));
 
 app.use(bodyParser.json());

@@ -1,4 +1,5 @@
 <script>
+	import NavBar from './../components/NavBar.svelte';
 	import Register from './../components/Register.svelte';
 	import Login from './../components/Login.svelte';
 
@@ -52,7 +53,7 @@
 </script>
 {#if !isLogin}
     
-
+<NavBar/>
 <main>
     {#if IsLoginForm}
     <Login {changeDisplay}/>

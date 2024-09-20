@@ -1,4 +1,5 @@
 <script>
+	import AddPost from './AddPost.svelte';
 	import { apiRequest } from './../api/ApiRequest';
     import { onMount } from 'svelte';
     import axios from 'axios';
@@ -19,13 +20,16 @@
     const lobbyUser = user.lobbyId
 
     let allMessages = [];
-    let filteredMessages;
+    let filteredMessages = [];
     let acceuil = "acceuil";
     let housePicture = "";
     let order = "ASC";
     let posts = [];
     let error = "";
+    let modalIsOpen = false;
 
+    $: allMessages; 
+    $: filteredMessages;
     // PROPS
  
     
@@ -52,7 +56,6 @@
         });
         allMessages = data.messages; 
         filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser)
-        console.log(allMessages);
         } catch (err) {
             error = err.message; 
             console.log(error);
@@ -91,8 +94,9 @@
     }
 
     onMount(async () => {
-        await getAllMessages();   
         await getDataUser();
+        await getAllMessages();   
+        
     });
 
 
@@ -130,10 +134,15 @@
                 }
         }
     }
+
+    let openModal = async () => {
+        modalIsOpen === false ? modalIsOpen = true : modalIsOpen = false;
+        await getAllMessages();  
+    }
 </script>
 
     <p>Bienvenue {user.username} !</p>
-    <section class="messages">
+    <section class="messages"> 
         <div class="control-section">
             <input type="search" name="search" id="search"  placeholder="Search">
             <div class="control-group">
@@ -147,36 +156,44 @@
                     </button>
                 {/if}
                 
-                <button>New topic</button>
+                <button on:click={openModal}>New topic</button>
             </div>
             
         </div>
-        {#each allMessages as message}
+        
 
         {#if filteredMessages.length === 0}
             <p>Aucun message trouvé pour ce lobby.</p>
         {:else}
-            {#each filteredMessages as message}
-                <article class="message" style="background-color: {myTheme.colors.background}; border-color: {myTheme.colors.secondary};">
+            {#each filteredMessages as message (message._id)}
+                <article class="message" style=" border-color: {myTheme.colors.secondary};">
                     <div class="message-header" style="background-color: {myTheme.colors.primary};">
                         <p class="author">Author : <span>{message.author}</span></p>
                         <p>{getMostRecentDate(message.createdAt, message.updatedAt)}</p>   
                     </div>
                     <div class="message-content">
                         <div class="control">
-                            {#if user._id !== message.author_id}
+                            {#if user._id === message.author_id}
                                 <img class="pencil" src={pencil} alt="pencil" width="15px">
                                 <img class="trash" src={trash} alt="trash" width="15px">
                             {/if}
                         </div>
+                       
                         <h3>{message.sujet}</h3>
-                        <blockquote>{message.message}</blockquote>
+                      
+                        <blockquote>{@html message.message}</blockquote>
                     </div>
                 </article>
             {/each}
         {/if}
-        {/each}
+        
+        
+       
     </section>
+    {#if modalIsOpen === true}
+            <AddPost {openModal} {user} {myTheme}/>
+        {/if}
+   
 
 <style lang="scss">
 main {
@@ -193,18 +210,18 @@ main {
     width: 75%;
     padding: 15px 30px;
     min-height: 70vh;
-    max-height: 100vh;
+    // max-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: start;
     align-items: center;
     gap: 40px;
-    background: rgba( 255, 255, 255, 0.25 );
-    box-shadow: 0 8px 32px 0 rgba(149, 149, 149, 0.37);
+    background: rgba(255, 255, 255, 0);
+    
     backdrop-filter: blur( 6px );
     -webkit-backdrop-filter: blur( 6px );
     border-radius: 10px;
-    border: 1px solid rgba( 255, 255, 255, 0.18 );
+   
 
     .control-section {
         width: 100%;
@@ -274,19 +291,19 @@ main {
 .message {
     width: 80%;
     height: 200px;
-    border: 3px solid;
+    background-color: rgba(255, 255, 255, 0.612);
+    color: rgb(52, 52, 52);
     border-radius: 5px;
     box-shadow: 0 8px 32px 0 rgba(151, 147, 19, 0.37);
     backdrop-filter: blur( 6px );
     -webkit-backdrop-filter: blur( 6px );
-    border-radius: 10px;
     transition: all ease-out 0.5s;
     &:hover {
         scale: 1.03;
         box-shadow: rgba(50, 50, 93, 0.25) 2px 8px 15px -4px, rgba(0, 0, 0, 0.3) 3px 6px 10px -5px;
 
         .message-header {
-            filter: brightness(1.25);
+            filter: brightness(1.1);
             
         }
     }
@@ -296,8 +313,8 @@ main {
         height: 30px;
         padding-left: 5px;
         padding-right: 5px;
-        border-top-left-radius: 7px;
-        border-top-right-radius: 7px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
         display: flex;
         justify-content: space-between;
         transition: all ease-out 0.5s;
@@ -310,14 +327,17 @@ main {
     }
 
     .message-content {
+        padding: 30px;
         .control {
             width: 100%;
             padding: 15px;
             display: flex;
             flex-direction: row;
             justify-content: flex-end;
-            align-items: center;
+            align-items: start;
             gap: 15px;
+            text-align: left;
+
             
             .pencil {
                 &:hover {
@@ -326,6 +346,21 @@ main {
                 }
             }
         }
+        h3 {
+            text-align: left;
+        }
+        h4 {
+            text-align: left;
+        }
+        p {
+            text-align: left;
+        }
+        blockquote {
+                width: 100%;
+                text-align: left;
+                padding: 20px;
+            }
+            
     }
 }  
 </style>
