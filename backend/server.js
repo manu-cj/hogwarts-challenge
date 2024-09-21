@@ -3,6 +3,9 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
 
 
 dotenv.config();
@@ -19,6 +22,18 @@ mongoose.connect(mongo_url)
 const app = express();
 
 
+const server = createServer(app); 
+
+
+const io = new Server(server, {
+  cors: {
+    origin: 'http://127.0.0.1:5173', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true 
+  }
+});
+
 
 app.use(cors({
   origin: 'http://127.0.0.1:5173', // URL du frontend
@@ -32,8 +47,28 @@ app.use(bodyParser.urlencoded({ extended: true }));
 import Routes from './routes/Routes.js'; 
 Routes(app);
 
-const PORT = 5000;
+io.on('connection', (socket) => {
+  console.log('Un utilisateur est connecté');
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:5000`);
+
+  socket.on('disconnect', () => {
+    console.log('Un utilisateur s\'est déconnecté');
+  });
+
+ 
+
+
+  socket.on('joinLobby', ({ lobby_id }) => {
+    socket.join(lobby_id);
+    console.log(`L'utilisateur a rejoint le lobby ${lobby_id}`);
+    socket.emit('joinLobby', { lobby_id });
+  });
+});
+
+export { io };
+
+
+const PORT = 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

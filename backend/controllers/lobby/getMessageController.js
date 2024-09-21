@@ -30,7 +30,7 @@ export async function getMessages(req, res) {
 
     const skip = (pageIndex - 1) * pageLimit;
     try {
-        const messages = await Lobby.find().skip(skip).limit(pageLimit);
+        const messages = await Lobby.find().sort({ createdAt: -1 }).skip(skip).limit(pageLimit);
         return res.status(200).json({
             success: true,
             page: pageIndex,

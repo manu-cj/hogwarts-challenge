@@ -1,5 +1,7 @@
 import Lobby from './../../models/Lobby.js';
 import { validateMessageData } from './validation/messageValidationController.js';
+import { io } from './../../server.js';
+
 
 
 export async function addMessage(req, res) {
@@ -9,10 +11,9 @@ export async function addMessage(req, res) {
           .json({ message: "Le corps de la requête est vide." });
       }
 
-      const {sujet, message, author, author_id, lobby_id} = req.body;
+      const {message, author, author_id, lobby_id} = req.body;
 
-      const { error } = validateMessageData({
-        sujet,
+      const { error } = validateMessageData({    
         message,
         author,
         author_id,
@@ -25,13 +26,22 @@ export async function addMessage(req, res) {
 
       try {
         const newLobbyMessage = new Lobby({
-            sujet,
             message,
             author,
             author_id,
             lobby_id
         })
         await newLobbyMessage.save();
+
+        io.emit('newMessage', {
+          _id: newLobbyMessage._id,
+          message,
+          author,
+          author_id,
+          lobby_id
+        });
+
+        
 
         res.status(201).json({
             message: "Message ajouté au lobby avec succès",

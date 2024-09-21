@@ -2,12 +2,6 @@ import mongoose from 'mongoose';
 
 // Définition du schéma avec les options de timestamps
 const lobbySchema = new mongoose.Schema({
-    sujet: {
-        type: String,
-        required: true,
-        minlength: 5,
-        maxlength: 55,
-    },
     message: {
         type: String,
         required: true,

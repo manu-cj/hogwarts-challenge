@@ -1,7 +1,8 @@
 <script>
+	import DeletePost from './DeletePost.svelte';
 	import AddPost from './AddPost.svelte';
 	import { apiRequest } from './../api/ApiRequest';
-    import { onMount } from 'svelte';
+    import { onMount, afterUpdate } from 'svelte';
     import axios from 'axios';
     import pencil from './../assets/icons/pencil-alt-solid.svg';
     import trash from './../assets/icons/trash-alt-solid.svg';
@@ -9,10 +10,17 @@
     import Hufflepuff from './../assets/house/hufflepuff-removebg-preview.png'
     import Ravenclaw from './../assets/house/ravenclaw-removebg-preview.png'
     import Slytherin from './../assets/house/slytherin-removebg-preview.png'
+    import FaTrashAlt from 'svelte-icons/fa/FaTrashAlt.svelte'
+
+    import io from 'socket.io-client';
+    let socket;
+
 
     export let user = {};
     export let myTheme = {};
+    export let housePicture;
     const { _id, email, username, lobbyId } = user;
+    export let author_id = "";
 
     let page = 1;
     let limit = 10;
@@ -21,12 +29,14 @@
 
     let allMessages = [];
     let filteredMessages = [];
+    let messagesContainer;
     let acceuil = "acceuil";
-    let housePicture = "";
+
     let order = "ASC";
     let posts = [];
     let error = "";
     let modalIsOpen = false;
+    let deletedModalIsOpen = false;
 
     $: allMessages; 
     $: filteredMessages;
@@ -41,9 +51,7 @@
         const updatedAtDate = new Date(updated_at);
 
         if (createdAtDate >= updatedAtDate) {
-            return `Create : ${createdAtDate.toLocaleString()}`;
-        } else {
-            return `Update : ${updatedAtDate.toLocaleString()}`;
+            return `<p>${createdAtDate.toLocaleString()}</p>`;
         }
     }
 
@@ -55,7 +63,7 @@
         method: 'GET'
         });
         allMessages = data.messages; 
-        filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser)
+        filteredMessages = allMessages.filter(message => message.lobby_id === lobbyUser).reverse()
         } catch (err) {
             error = err.message; 
             console.log(error);
@@ -96,8 +104,41 @@
     onMount(async () => {
         await getDataUser();
         await getAllMessages();   
+        scrollToBottom();
+
+        // Créer une connexion socket
+        socket = io('http://localhost:5000'); // Change l'URL avec celle de ton serveur
+
+        // Écoute des événements envoyés par le serveur
+        socket.on('newMessage', (message) => {
+        console.log('Nouveau message reçu:', message);
+        allMessages = [message, ...allMessages];
+        filteredMessages = allMessages.filter(msg => msg.lobby_id === lobbyUser).reverse();
+        console.log(allMessages);
+    
+    
+    // Force la mise à jour en retardant légèrement l'évaluation
+    setTimeout(() => {
+        filteredMessages = [...filteredMessages];
+    }, 0);
+});
+
+        // Déconnexion propre lors de la destruction du composant
+        return () => {
+            socket.disconnect();
+        };
         
     });
+
+    afterUpdate(() => {
+        scrollToBottom();
+    });
+
+    function scrollToBottom() {
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
 
 
     let refreshToken = async (onSuccess, onError) => {
@@ -137,65 +178,64 @@
 
     let openModal = async () => {
         modalIsOpen === false ? modalIsOpen = true : modalIsOpen = false;
-        await getAllMessages();  
+         
     }
+
+    let openDeletedModal = async (post_id_value) => {
+        author_id = post_id_value;
+        deletedModalIsOpen === false ? deletedModalIsOpen = true : deletedModalIsOpen = false;
+        await getAllMessages(); 
+        console.log(deletedModalIsOpen);
+        
+    }
+    
 </script>
 
-    <p>Bienvenue {user.username} !</p>
-    <section class="messages"> 
+    <section class="lobby">
         <div class="control-section">
-            <input type="search" name="search" id="search"  placeholder="Search">
-            <div class="control-group">
-                {#if order === "ASC"}
-                <button on:click={() => {order = "DESC"}}>
-                    Order 🔺
-                </button>
-                {:else}
-                    <button on:click={() => { order = "ASC"}}>
-                        Order 🔻
-                    </button>
-                {/if}
-                
-                <button on:click={openModal}>New topic</button>
-            </div>
-            
+            <img src={housePicture} alt={acceuil} width="50px"> 
         </div>
-        
-
-        {#if filteredMessages.length === 0}
-            <p>Aucun message trouvé pour ce lobby.</p>
-        {:else}
-            {#each filteredMessages as message (message._id)}
-                <article class="message" style=" border-color: {myTheme.colors.secondary};">
-                    <div class="message-header" style="background-color: {myTheme.colors.primary};">
-                        <p class="author">Author : <span>{message.author}</span></p>
-                        <p>{getMostRecentDate(message.createdAt, message.updatedAt)}</p>   
-                    </div>
-                    <div class="message-content">
-                        <div class="control">
-                            {#if user._id === message.author_id}
-                                <img class="pencil" src={pencil} alt="pencil" width="15px">
-                                <img class="trash" src={trash} alt="trash" width="15px">
-                            {/if}
+        <section class="messages" bind:this={messagesContainer}> 
+            {#if filteredMessages.length === 0}
+                <p>Aucun message trouvé pour ce lobby.</p>
+            {:else}
+                {#each filteredMessages as message (message._id)}
+                    <article class="message" style=" border-color: {myTheme.colors.secondary};">
+                        <div class="message-header" style="background-color: {myTheme.colors.primary};">
+                            <p class="author"><strong>{message.author}</strong></p>
+                            <p>{@html getMostRecentDate(message.createdAt, message.updatedAt)}</p>   
                         </div>
-                       
-                        <h3>{message.sujet}</h3>
-                      
-                        <blockquote>{@html message.message}</blockquote>
-                    </div>
-                </article>
-            {/each}
-        {/if}
+                        <div class="message-content">
+                            <div class="control">
+                                {#if user._id === message.author_id}
+                                    <button on:click={openDeletedModal(message.author_id)}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="trash-icon">
+                                            <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    
+                                            
+                                {/if}
+                            </div>
+                            <blockquote>{@html message.message}</blockquote>
+                        </div>
+                    </article>
+                {/each}
+            {/if}
+           
+        </section>
         
-        
-       
-    </section>
-    {#if modalIsOpen === true}
             <AddPost {openModal} {user} {myTheme}/>
+    
+        {#if deletedModalIsOpen === true}
+            <DeletePost {openDeletedModal} {user} {myTheme} {author_id}/>
         {/if}
-   
 
+    </section>
+    
+   
 <style lang="scss">
+   
 main {
      width: 100%;
      display: flex;
@@ -206,95 +246,55 @@ main {
      min-height: 100vh;
 }
 
-.messages {
+.lobby {
     width: 75%;
     padding: 15px 30px;
     min-height: 70vh;
-    // max-height: 100vh;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
     justify-content: start;
-    align-items: center;
+    align-items: flex-end;
     gap: 40px;
-    background: rgba(255, 255, 255, 0);
-    
+    background: rgba(36, 36, 36, 0.966);
+    overflow-y: scroll;
+    overflow-x: hidden;
     backdrop-filter: blur( 6px );
     -webkit-backdrop-filter: blur( 6px );
     border-radius: 10px;
-   
 
     .control-section {
         width: 100%;
         display: flex;
         flex-direction: row;
-        justify-content: flex-end;
+        justify-content: flex-start;
         align-items: center;
-        gap: 30px;
-
-        input[type=search] {
-            width: 300px;
-            height: 40px;
-            padding: 5px;
-            border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.315);
-            border: 1px #FFD700 solid;
-            transition: all 0.3s ease-out;
-            
-            &:hover, &:focus {
-                scale: 1.05;
-                box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
-            }
-        }
-        .control-group {
-            width: 75%;
-            display: flex;
-            flex-direction: row;
-            justify-content: end;
-            gap: 15px;
-
-            button {
-                position: relative;
-                color: black;
-                background-color: rgba(255, 255, 255, 0.612);
-                border: 1px #FFD700 solid;
-                transition: all 0.3s ease-in;
-                border-radius: 5px;
-
-                &:hover {
-                    transform: scale(1.05); 
-                    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
-                }
-
-                &::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: radial-gradient(circle, #ffa200, #ffbb00);
-                    transition: opacity 0.5s ease-in; 
-                    opacity: 0;
-                    z-index: -1; 
-                    border-radius: 5px;
-                }
-
-                &:hover::before {
-                    opacity: 1; 
-                }
-            }
-        }
-
-        
+        gap: 30px;  
     }
 }
+
+.messages {
+    width: 100%;
+    padding: 15px 30px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: flex-end;
+    gap: 40px;
+    
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-radius: 10px;
+}
 .message {
-    width: 80%;
-    height: 200px;
-    background-color: rgba(255, 255, 255, 0.612);
-    color: rgb(52, 52, 52);
+    min-width: 30%;
+    max-width: 80%;
+    
+    background-color: rgba(255, 255, 255, 0.112);
+    color: rgb(249, 249, 249);
     border-radius: 5px;
-    box-shadow: 0 8px 32px 0 rgba(151, 147, 19, 0.37);
+    box-shadow: 0 8px 32px 0 rgba(77, 75, 9, 0.37);
     backdrop-filter: blur( 6px );
     -webkit-backdrop-filter: blur( 6px );
     transition: all ease-out 0.5s;
@@ -303,9 +303,19 @@ main {
         box-shadow: rgba(50, 50, 93, 0.25) 2px 8px 15px -4px, rgba(0, 0, 0, 0.3) 3px 6px 10px -5px;
 
         .message-header {
-            filter: brightness(1.1);
+            filter: brightness(1.1);   
+        }
+
+        .message-content {
+
+            .control {
+                opacity: 1;
+                
+            }
             
         }
+
+
     }
 
     .message-header {
@@ -327,23 +337,52 @@ main {
     }
 
     .message-content {
-        padding: 30px;
+        word-break: break-all;
+        color: rgb(242, 242, 242);
+        transition: all 0.5s ease-in;
+        
         .control {
-            width: 100%;
-            padding: 15px;
+            width: 100%;  
+            opacity: 0;
             display: flex;
             flex-direction: row;
             justify-content: flex-end;
             align-items: start;
-            gap: 15px;
-            text-align: left;
-
+            gap: 5px;
+            text-align: left; 
+            padding-right: 10px;
+            transition: all 0.5s ease-in;
             
-            .pencil {
-                &:hover {
-                    color: blue;
 
+            button {
+                width: 10px;
+                height: 10px;
+                background: none;
+                border: none;
+                cursor: default;
+                outline: none;
+                width: 5px;
+                
+                
+
+                .pencil-icon {
+                    width: 20px;
+                    color: rgb(53, 53, 53);
+                    cursor: pointer;
+                    &:hover {
+                        color: lightseagreen;
+                    }
                 }
+                .trash-icon {
+                    width: 20px;
+                    cursor: pointer;
+                    color: rgb(217, 214, 214);
+                    
+                    &:hover {
+                        color: tomato;
+                    }
+                }
+
             }
         }
         h3 {
@@ -358,7 +397,8 @@ main {
         blockquote {
                 width: 100%;
                 text-align: left;
-                padding: 20px;
+              
+                padding: 10px 50px;
             }
             
     }

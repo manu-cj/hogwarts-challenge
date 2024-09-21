@@ -10,6 +10,7 @@
     import Ravenclaw from './../assets/house/ravenclaw-removebg-preview.png'
     import Slytherin from './../assets/house/slytherin-removebg-preview.png'
     import { tokenStore, updateAccessToken } from './../store/tokenStore.js'
+    import { io } from "socket.io-client";
   
     const tokens = JSON.parse(localStorage.getItem('tokens'));
     let user = null;
@@ -19,6 +20,7 @@
     let lobbyUser = '';
     let myTheme = { colors: { primary: "#666666", secondary: "#777777", background: "#1e1e1e", text: "#cccccc" } };
     let tokenIsRefresh = false
+    let socket;
 
     const theme = (lobbyUser) => {
     let baseTheme;
@@ -77,7 +79,7 @@
             colors: {
             primary: "#666666",   
             secondary: "#777777",
-            background: "#1e1e1e",
+            background: "none",
             text: "#cccccc",
             },
         };
@@ -103,9 +105,21 @@
         loading = false;
         lobbyUser = user.lobbyId;
         myTheme = theme(lobbyUser);
+
+        socket = io("http://localhost:5000");
+        socket.emit('joinLobby', { lobby_id: lobbyUser });
+
+        socket.on('joinLobby', (lobbyUser) => {
+            console.log('joinLobby :', lobbyUser);
+        });
       } catch (err) {
         error = err.message;
         loading = false;
+        setTimeout(() => {
+            window.location.href = '#/';
+        }, 100); 
+
+
         if (error === "Token expiré, fais une requète pour refresh le token.") {
             refreshToken(
                 (data) => {
@@ -114,7 +128,7 @@
                     tokenIsRefresh === false ? tokenIsRefresh = true: tokenIsRefresh = false;
                     setTimeout(() => {
                         window.location.href = '#/';
-                    }, 100);  // Délai de 100ms avant la redirection
+                    }, 100);  
                     
                 },
                 (error) => {
@@ -157,19 +171,27 @@
   
     onMount(() => {
       getDataUser();
+      
     });
 
     let loading = true
+
   </script>
 
 <main style="background-color: {myTheme.colors.primary};">
     <NavBar/> 
-    <h1>{acceuil}</h1>
-    <img src={housePicture} alt={acceuil} width="120px">
 {#if user}
-    <Messages {user} {myTheme} />
+   
+
+    <Messages {user} {myTheme} {housePicture} />
 {:else if error}
-    <p>Erreur : {error}</p>
+<div class="loader-container">
+        <div class="loader">
+            <div class="wand"></div>
+            <div class="sparkles"></div>
+        </div>
+        <p class="loading-text">Chargement... ⚡</p>
+    </div>
 {/if}
 {#if loading}
     <div class="loader-container">
@@ -191,6 +213,6 @@
         flex-direction: column;
         justify-content: start;
         align-items: center;
-        gap: 30px;
+        gap: 10px;
     }
 </style>

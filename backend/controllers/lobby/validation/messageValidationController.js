@@ -1,7 +1,6 @@
 import Joi from 'joi';
 
 const messageSchema = Joi.object({
-    sujet: Joi.string().min(5).max(55).required(),
     message: Joi.string().min(10).max(255).required(),
     author: Joi.string().min(3).required(),
     author_id: Joi.string().required(),
