@@ -11,9 +11,10 @@ import { getResponses } from "../controllers/lobby/getResponseController.js";
 import { getMessageById } from "../controllers/lobby/getMessageByIdController.js";
 import { getNotifications } from "../controllers/users/getNotificationsController.js";
 import { getUser } from "../controllers/users/getUserController.js";
+import { deleteMessage } from "../controllers/lobby/deleteMessageController.js";
 
 const router = express.Router();
-
+ 
 // Routes POST
 router.post("/register", addUser);
 router.post("/auth", login);
@@ -34,8 +35,7 @@ router.get('/get-user', verifyAccessToken, getUser);
  
 
 //Routes delete
-
-
+router.delete('/delete-message/:messageId', verifyAccessToken, deleteMessage);
 
 
 export default function (app) {

@@ -58,9 +58,9 @@ export async function addUser(req, res) {
       message: "Utilisateur ajouté avec succès.",
     });
   } catch (err) {
-    console.error("Erreur lors de la création de l'utilisateur:", err);
-    res
-      .status(500)
-      .json({ message: "Erreur lors de la création de l'utilisateur." });
+      console.error("Erreur lors de la création de l'utilisateur:", err);
+      res
+        .status(500)
+        .json({ message: "Erreur lors de la création de l'utilisateur." });
   }
 }
