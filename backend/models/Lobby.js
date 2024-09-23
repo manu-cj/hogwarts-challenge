@@ -5,7 +5,7 @@ const lobbySchema = new mongoose.Schema({
     message: {
         type: String,
         required: true,
-        minlength: 10,
+        minlength: 1,
         maxlength: 255,
     },
     author: {

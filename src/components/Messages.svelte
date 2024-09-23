@@ -11,6 +11,7 @@
     import Ravenclaw from './../assets/house/ravenclaw-removebg-preview.png'
     import Slytherin from './../assets/house/slytherin-removebg-preview.png'
     import FaTrashAlt from 'svelte-icons/fa/FaTrashAlt.svelte'
+    import loader from './../assets/loader/bouncing-circles.svg'
 
     import io from 'socket.io-client';
     let socket;
@@ -20,7 +21,11 @@
     export let myTheme = {};
     export let housePicture;
     const { _id, email, username, lobbyId } = user;
-    export let author_id = "";
+    export let messageData = {
+        author_id: "",
+        message_id: "",
+        accessToken: ""
+    }
 
     let page = 1;
     let limit = 10;
@@ -37,6 +42,7 @@
     let error = "";
     let modalIsOpen = false;
     let deletedModalIsOpen = false;
+    let inWrite = false;
 
     $: allMessages; 
     $: filteredMessages;
@@ -106,24 +112,30 @@
         await getAllMessages();   
         scrollToBottom();
 
-        // Créer une connexion socket
-        socket = io('http://localhost:5000'); // Change l'URL avec celle de ton serveur
+        socket = io('http://localhost:5000');
 
-        // Écoute des événements envoyés par le serveur
+        socket.on('in write', (data) => {
+            console.log('User is typing:', data.inWrite);
+            inWrite = data.inWrite;
+            console.log(inWrite);
+            
+        });
+
         socket.on('newMessage', (message) => {
-        console.log('Nouveau message reçu:', message);
-        allMessages = [message, ...allMessages];
-        filteredMessages = allMessages.filter(msg => msg.lobby_id === lobbyUser).reverse();
-        console.log(allMessages);
-    
-    
-    // Force la mise à jour en retardant légèrement l'évaluation
-    setTimeout(() => {
-        filteredMessages = [...filteredMessages];
-    }, 0);
-});
+            allMessages = [message, ...allMessages];
+            filteredMessages = allMessages.filter(msg => msg.lobby_id === lobbyUser).reverse();
 
-        // Déconnexion propre lors de la destruction du composant
+            setTimeout(() => {
+                filteredMessages = [...filteredMessages];
+            }, 0);
+        });
+
+        socket.on('messageDeleted', (data) => {
+            console.log("Message supprimé", data);
+            allMessages = allMessages.filter(msg => msg._id !== data.id);
+            filteredMessages = allMessages.filter(msg => msg.lobby_id === lobbyUser).reverse();
+        });
+
         return () => {
             socket.disconnect();
         };
@@ -181,10 +193,12 @@
          
     }
 
-    let openDeletedModal = async (post_id_value) => {
-        author_id = post_id_value;
+    let openDeletedModal = async (post_id_value, author_id_value) => {
+        messageData.author_id = author_id_value;
+        messageData.message_id = post_id_value;
+        messageData.accessToken = tokens.accessToken;
         deletedModalIsOpen === false ? deletedModalIsOpen = true : deletedModalIsOpen = false;
-        await getAllMessages(); 
+        
         console.log(deletedModalIsOpen);
         
     }
@@ -208,7 +222,7 @@
                         <div class="message-content">
                             <div class="control">
                                 {#if user._id === message.author_id}
-                                    <button on:click={openDeletedModal(message.author_id)}>
+                                    <button on:click={openDeletedModal(message._id, message.author_id)}>
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="trash-icon">
                                             <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd" />
                                         </svg>
@@ -222,13 +236,18 @@
                     </article>
                 {/each}
             {/if}
-           
+           {#if inWrite}
+            <div class="inWrite">
+                <img src={loader} alt="loading" width="30px">
+            </div>
+
+           {/if}
         </section>
         
             <AddPost {openModal} {user} {myTheme}/>
     
         {#if deletedModalIsOpen === true}
-            <DeletePost {openDeletedModal} {user} {myTheme} {author_id}/>
+            <DeletePost {openDeletedModal} {user} {myTheme} {messageData}/>
         {/if}
 
     </section>
@@ -403,4 +422,10 @@ main {
             
     }
 }  
+
+.inWrite {
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.188);
+    border-radius: 10px;
+}
 </style>

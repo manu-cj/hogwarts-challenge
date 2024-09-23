@@ -18,6 +18,10 @@
     let quill;
     let errors = { sujet: '', post: ''};
     let socket;
+    let animationName = "";
+    let inWrite = false;
+    let typingTimeout;
+    let userWrite = false;
     
 
     console.log(myTheme);
@@ -45,9 +49,13 @@
             console.log('Socket disconnected');
         });
 
+        
+
         socket.on('newMessage', (msg) => {
             console.log('New message received:', msg);
         });
+
+        
     });
 
     onDestroy(() => {
@@ -56,23 +64,77 @@
     }
 });
 
-    function validate(post) {
+let animationClass = '';
+
+function validate(post) {
+    errors = { post: '' };
+    let isValid = true;
+
+    if (post !== null) {
+        if (!post) {
+            errors.post = 'Le message est vide.';
+            isValid = false;
+            animationClass = "fadeOut"; 
+            setTimeout(() => {
+                errors.post = '';
+                animationClass = ''; 
+            }, 5000);
+        } else if (post.length < 3) {
+            errors.post = `Il manque ${3 - post.length} caractères à votre message.`;
+            isValid = false;
+            animationClass = "fadeOut"; 
+            setTimeout(() => {
+                animationClass = ''; 
+            }, 5000);
+        } else if (post.length > 255) {
+            errors.post = `Il y a ${post.length - 255} caractères en trop à votre message.`;
+            isValid = false;
+            animationClass = "fadeOut"; 
+            setTimeout(() => {
+                animationClass = ''; 
+            }, 5000);
+        } else {
+            animationClass = '';
+        }
+    }
+
+    return isValid;
+}
+
+    function handleKeyup(post) {
         errors = { post: ''};
         let isValid = true;
+        inWrite = true;
 
+        socket.emit('in write', { inWrite });
+
+        // Réinitialiser le timeout
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            inWrite = false; // L'utilisateur a cessé d'écrire
+            socket.emit('in write', { inWrite }); // Émettre que l'utilisateur a cessé d'écrire
+        }, 2500);
 
         if (post !== null) {
             if (!post) {
-            errors.post = 'Le post est requis.';
+            errors.post = '';
             isValid = false;
-            }else if (post.length < 10) {
-                errors.post = `il manque ${10-post.length} charactères à votre post.`
-                isValid = false;
-            }
-            else if (post.length > 255){
-                errors.post = `il y a ${post.length-255} charactères en trop à votre post.`
-                isValid = false;
-            }
+            inWrite = false;
+            socket.emit('in write', { inWrite });
+            
+            }else if (post.length < 3) {
+            errors.post = `Il manque ${3 - post.length} caractères à votre message.`;
+            isValid = false;
+            animationClass = "keyUpFadeOut"; 
+            
+        } else if (post.length > 255) {
+            errors.post = `Il y a ${post.length - 255} caractères en trop à votre message.`;
+            isValid = false;
+            animationClass = "keyUpFadeOut"; 
+            
+        } else {
+            animationClass = ''; 
+        }
         }
         
            
@@ -99,11 +161,11 @@
                 })
 
                 socket.emit('newMessage', {
-                message,
-                author,
-                author_id,
-                lobby_id
-            });
+                    message,
+                    author,
+                    author_id,
+                    lobby_id
+                });
                 console.log(data.message);
                 formData = {}
                 message = "";
@@ -122,20 +184,23 @@
 
 <main>
 </main>
-
+{#if userWrite === true}
+    <p>Quelqu'un ecrit</p>
+{/if}
 <div class="modal-section">
     <div class="content">
         <form on:submit={handleSubmit}>
             <div class="input-div">
-               <input type="text" name="message" id="message" bind:value={message}>
+               <input type="text" name="message" id="message" bind:value={message} on:keyup={event => handleKeyup(message)}>
             </div>
-            {#if errors.post}
-                <p class="error">{errors.post}</p> 
-            {/if}
+            
             <div class="submit-div">
                 <input type="submit" value="Envoyer"  style="background-color: {myTheme.colors.primary};"/>
             </div>
         </form>
+        {#if errors.post}
+            <p class="error {animationClass}">{errors.post}</p>
+        {/if}
     </div>
 </div>
 
@@ -210,7 +275,64 @@
         }
     }
 
+.error.fadeOut {
+    animation: fadeOut 5s forwards;
+}
 
+.error.keyUpFadeOut {
+    animation: keyUpFadeOut 10s forwards;
+}
+
+
+@keyframes fadeOut {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        height: 5px;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    80% {
+        opacity: 1;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        height: 5px;
+    }
+    100% {
+        opacity: 0;
+        margin-top: 0;
+        margin-bottom: 0.2rem;
+        height: 0;
+    }
+}
+
+@keyframes keyUpFadeOut {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        height: 20px;
+     
+    }
+
+    80% {
+        opacity: 1;
+
+       
+    }
+    100% {
+        opacity: 1;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        height: 20px;
+
+     
+    }
+}
     
    
     

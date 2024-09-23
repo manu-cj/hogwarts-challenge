@@ -55,7 +55,11 @@ io.on('connection', (socket) => {
     console.log('Un utilisateur s\'est déconnecté');
   });
 
- 
+  socket.on('in write', (data) => {
+    console.log('Received in write:', data.inWrite); // Log lorsque l'événement est reçu
+    socket.broadcast.emit('in write', data);
+
+  });
 
 
   socket.on('joinLobby', ({ lobby_id }) => {

@@ -38,7 +38,9 @@ export async function addMessage(req, res) {
           message,
           author,
           author_id,
-          lobby_id
+          lobby_id,
+          createdAt: newLobbyMessage.createdAt,
+          updatedAt: newLobbyMessage.updatedAt,
         });
 
         

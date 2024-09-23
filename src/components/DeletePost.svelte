@@ -1,14 +1,14 @@
 <script>
-import { apiRequest } from './../api/ApiRequest';
+import { apiRequest } from './../api/ApiRequest.js';
 import { onMount } from "svelte";
 
   
 
   export let user = {};
   export let myTheme = {};
-  export let author_id;
+  export let messageData; 
 
-  console.log(author_id);
+  console.log(messageData);
   
 
   export let openDeletedModal;
@@ -16,7 +16,10 @@ import { onMount } from "svelte";
   const tokens = JSON.parse(localStorage.getItem('tokens'));
   
   let author = user.username
-  
+  let messageId = messageData.message_id
+  let authorId = messageData.author_id;
+  let userId = user._id;
+  let accessToken = messageData.accessToken;
   
   let errors = { author_id: ''};
   
@@ -62,8 +65,28 @@ import { onMount } from "svelte";
 
   let handleSubmit = async (event) => {
       event.preventDefault();
-      if (validate(author_id)) {
-        console.log('Tout va bien');
+      if (validate(authorId)) {
+        const formData = {
+            authorId,
+            userId
+        }
+
+        try {
+            const data = await apiRequest({
+                token: accessToken,
+                endpoint: `/delete-message/${messageId}`,
+                method: 'DELETE',
+                data: formData
+            })
+
+            console.log(data.message);
+            closeModal();
+            
+            
+        } catch (err) {
+            console.log(err.message);
+            
+        }
         
       }
       
@@ -81,7 +104,7 @@ import { onMount } from "svelte";
       </div>
       <h3>Do you want to delete this post ?</h3>
       <div class="content">
-          <button class="no-button">No</button>
+          <button class="no-button" on:click={closeModal}>No</button>
           <button class="yes-button" on:click={handleSubmit}>Yes</button>
       </div>
       {#if errors.author_id}

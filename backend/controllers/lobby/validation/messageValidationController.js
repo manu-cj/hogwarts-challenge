@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
 const messageSchema = Joi.object({
-    message: Joi.string().min(10).max(255).required(),
+    message: Joi.string().min(1).max(255).required(),
     author: Joi.string().min(3).required(),
     author_id: Joi.string().required(),
     lobby_id: Joi.number()
