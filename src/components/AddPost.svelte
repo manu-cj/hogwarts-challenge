@@ -10,6 +10,7 @@
     export let myTheme = {};
     export let openModal;
 
+
     const tokens = JSON.parse(localStorage.getItem('tokens'));
     let message = "";
     let author = user.username
@@ -21,7 +22,7 @@
     let animationName = "";
     let inWrite = false;
     let typingTimeout;
-    let userWrite = false;
+    
     
 
     console.log(myTheme);
@@ -105,14 +106,16 @@ function validate(post) {
         errors = { post: ''};
         let isValid = true;
         inWrite = true;
+    
+ 
+        
+        socket.emit('in write', { inWrite, author_id });
 
-        socket.emit('in write', { inWrite });
-
-        // Réinitialiser le timeout
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
-            inWrite = false; // L'utilisateur a cessé d'écrire
-            socket.emit('in write', { inWrite }); // Émettre que l'utilisateur a cessé d'écrire
+            inWrite = false;
+  
+            socket.emit('in write', { inWrite, author_id }); 
         }, 2500);
 
         if (post !== null) {
@@ -120,6 +123,7 @@ function validate(post) {
             errors.post = '';
             isValid = false;
             inWrite = false;
+            userWrite = false;
             socket.emit('in write', { inWrite });
             
             }else if (post.length < 3) {
@@ -184,9 +188,7 @@ function validate(post) {
 
 <main>
 </main>
-{#if userWrite === true}
-    <p>Quelqu'un ecrit</p>
-{/if}
+
 <div class="modal-section">
     <div class="content">
         <form on:submit={handleSubmit}>

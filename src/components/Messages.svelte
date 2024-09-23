@@ -26,6 +26,7 @@
         message_id: "",
         accessToken: ""
     }
+    let userWrite = "";
 
     let page = 1;
     let limit = 10;
@@ -115,10 +116,8 @@
         socket = io('http://localhost:5000');
 
         socket.on('in write', (data) => {
-            console.log('User is typing:', data.inWrite);
-            inWrite = data.inWrite;
-            console.log(inWrite);
-            
+            inWrite = data.inWrite; 
+            userWrite = data.author_id     
         });
 
         socket.on('newMessage', (message) => {
@@ -131,7 +130,6 @@
         });
 
         socket.on('messageDeleted', (data) => {
-            console.log("Message supprimé", data);
             allMessages = allMessages.filter(msg => msg._id !== data.id);
             filteredMessages = allMessages.filter(msg => msg.lobby_id === lobbyUser).reverse();
         });
@@ -236,12 +234,14 @@
                     </article>
                 {/each}
             {/if}
-           {#if inWrite}
-            <div class="inWrite">
-                <img src={loader} alt="loading" width="30px">
-            </div>
-
-           {/if}
+            {#if userWrite !== user._id}
+                {#if inWrite}
+                    <div class="inWrite">
+                        <img src={loader} alt="loading" width="30px">
+                    </div>
+                {/if}
+            {/if}
+           
         </section>
         
             <AddPost {openModal} {user} {myTheme}/>

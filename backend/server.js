@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('in write', (data) => {
-    console.log('Received in write:', data.inWrite); // Log lorsque l'événement est reçu
+    console.log('Received in write:', data);
     socket.broadcast.emit('in write', data);
 
   });
