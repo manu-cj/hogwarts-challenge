@@ -1,5 +1,6 @@
 # A props du projet
-Ce projet est encore en développement et n'est donc pas encore terminé, n'hésitez pas à revenir plus tard pour plus d'information
+Chat instantané sur le thème d’Harry Potter, développé avec Svelte pour le frontend et Socket.io avec Node.js pour la communication en temps réel.
+Les utilisateurs peuvent discuter dans une interface immersive aux couleurs des maisons de Poudlard.
 
 ## Objectif
 - Apprendre NodeJs pour faire l'api d'un blog Harry potter en utilisant de bonnes pratiques
